@@ -1,0 +1,16 @@
+@echo off
+cd D:\deepl\frontend
+echo PyTorch CNN 시각화 도구 - 프론트엔드 초기화 중...
+echo.
+echo node_modules 삭제 중...
+if exist node_modules rmdir /S /Q node_modules
+echo .cache 삭제 중...
+if exist node_modules\.cache rmdir /S /Q node_modules\.cache
+echo package-lock.json 삭제 중...
+if exist package-lock.json del package-lock.json
+echo.
+echo 패키지 다시 설치 중...
+call npm install
+echo.
+echo 초기화 완료. 이제 run_frontend.bat를 실행하세요.
+pause
