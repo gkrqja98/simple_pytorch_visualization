@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Nav, Tab, Button, Alert, Card } from 'react-bootstrap';
+import { Row, Col, Form, Nav, Tab, Alert, Card } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from '../TensorVisualizer';
 import AnimatedCalculation from '../AnimatedCalculation';
@@ -7,9 +7,7 @@ import AnimatedCalculation from '../AnimatedCalculation';
 const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, learning_rate }) => {
   const [decimalPlaces, setDecimalPlaces] = useState(6);
   const [activeTab, setActiveTab] = useState('basic');
-
   const [highlightCell, setHighlightCell] = useState({ row: -1, col: -1 });
-
   const [calculationExample, setCalculationExample] = useState('weightGrad');
 
   // 컨볼루션 역전파 설명을 위한 계산 단계들
@@ -167,8 +165,6 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
     }
   };
 
-
-
   return (
     <div className="conv-backprop-visualizer">
       {/* Controls */}
@@ -196,10 +192,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
             <Nav.Link eventKey="basic">Basic Visualization</Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link eventKey="detailed">Detailed Calculation</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="learning-rate">Learning Rate Impact</Nav.Link>
+            <Nav.Link eventKey="detailed">Calculation & Learning Rate</Nav.Link>
           </Nav.Item>
         </Nav>
 
@@ -399,7 +392,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
             </Row>
           </Tab.Pane>
 
-          {/* Detailed Calculation Tab */}
+          {/* Detailed Calculation & Learning Rate Tab */}
           <Tab.Pane eventKey="detailed">
             <div className="detailed-gradient-calculation p-3 bg-light rounded">
               <h5 className="mb-3">Step-by-Step Convolution Gradient Calculation</h5>
@@ -711,89 +704,85 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                   </Row>
                 )}
               </div>
-            </div>
-          </Tab.Pane>
-
-
-
-          {/* Learning Rate Impact Tab */}
-          <Tab.Pane eventKey="learning-rate">
-            <div className="learning-rate-impact p-3 bg-light rounded">
-              <h5 className="mb-3">Learning Rate Impact on Weight Updates</h5>
               
-              <div className="learning-rate-explanation mb-4">
-                <p>
-                  The learning rate (η) controls the step size during gradient descent. 
-                  It significantly impacts the training process - too small causes slow convergence, 
-                  too large can cause divergence or oscillation.
-                </p>
-                <BlockMath math="W_{new} = W_{old} - \eta \cdot \frac{\partial L}{\partial W}" />
+              {/* Learning Rate Impact Section */}
+              <div className="learning-rate-impact mt-5 p-3 bg-light rounded">
+                <h5 className="mb-3">Learning Rate Impact on Weight Updates</h5>
+                
+                <div className="learning-rate-explanation mb-4">
+                  <p>
+                    The learning rate (η) controls the step size during gradient descent. 
+                    It significantly impacts the training process - too small causes slow convergence, 
+                    too large can cause divergence or oscillation.
+                  </p>
+                  <BlockMath math="W_{new} = W_{old} - \eta \cdot \frac{\partial L}{\partial W}" />
+                </div>
+                
+                {weightGradData.length > 0 && initialWeightsData.length > 0 ? (
+                  <Row>
+                    <Col md={4}>
+                      <div className="learning-rate-scenario p-3 border rounded">
+                        <h6 className="text-center">Small Learning Rate (η = 0.001)</h6>
+                        <div className="weight-scenario">
+                          <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
+                          <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
+                          <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * 0.001)}</p>
+                          <div className="updated-weight">
+                            <p><strong>New Weight:</strong> {formatValue((initialWeightsData[0] && initialWeightsData[0][0] || 0) - (weightGradData[0] && weightGradData[0][0] || 0) * 0.001)}</p>
+                          </div>
+                        </div>
+                        <div className="scenario-comment mt-3">
+                          <p className="text-muted">
+                            Small learning rate results in minimal weight changes, potentially slow convergence but stable training.
+                          </p>
+                        </div>
+                      </div>
+                    </Col>
+                    
+                    <Col md={4}>
+                      <div className="learning-rate-scenario p-3 border rounded border-primary">
+                        <h6 className="text-center">Current Learning Rate (η = {learning_rate})</h6>
+                        <div className="weight-scenario">
+                          <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
+                          <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
+                          <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * (learning_rate || 0))}</p>
+                          <div className="updated-weight bg-light p-2 rounded">
+                            <p><strong>New Weight:</strong> {formatValue(updatedWeightsData[0] && updatedWeightsData[0][0])}</p>
+                          </div>
+                        </div>
+                        <div className="scenario-comment mt-3">
+                          <p className="text-muted">
+                            Current learning rate provides a balanced update - significant enough for learning but controlled for stability.
+                          </p>
+                        </div>
+                      </div>
+                    </Col>
+                    
+                    <Col md={4}>
+                      <div className="learning-rate-scenario p-3 border rounded">
+                        <h6 className="text-center">Large Learning Rate (η = 0.1)</h6>
+                        <div className="weight-scenario">
+                          <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
+                          <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
+                          <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * 0.1)}</p>
+                          <div className="updated-weight">
+                            <p><strong>New Weight:</strong> {formatValue((initialWeightsData[0] && initialWeightsData[0][0] || 0) - (weightGradData[0] && weightGradData[0][0] || 0) * 0.1)}</p>
+                          </div>
+                        </div>
+                        <div className="scenario-comment mt-3">
+                          <p className="text-muted">
+                            Large learning rate causes dramatic weight changes, potentially faster convergence but risk of overshooting or divergence.
+                          </p>
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
+                ) : (
+                  <Alert variant="info">
+                    Learning rate comparison requires weight gradient and initial weights data.
+                  </Alert>
+                )}
               </div>
-              
-              {weightGradData.length > 0 && initialWeightsData.length > 0 ? (
-                <Row>
-                  <Col md={4}>
-                    <div className="learning-rate-scenario p-3 border rounded">
-                      <h6 className="text-center">Small Learning Rate (η = 0.001)</h6>
-                      <div className="weight-scenario">
-                        <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
-                        <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
-                        <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * 0.001)}</p>
-                        <div className="updated-weight">
-                          <p><strong>New Weight:</strong> {formatValue((initialWeightsData[0] && initialWeightsData[0][0] || 0) - (weightGradData[0] && weightGradData[0][0] || 0) * 0.001)}</p>
-                        </div>
-                      </div>
-                      <div className="scenario-comment mt-3">
-                        <p className="text-muted">
-                          Small learning rate results in minimal weight changes, potentially slow convergence but stable training.
-                        </p>
-                      </div>
-                    </div>
-                  </Col>
-                  
-                  <Col md={4}>
-                    <div className="learning-rate-scenario p-3 border rounded border-primary">
-                      <h6 className="text-center">Current Learning Rate (η = {learning_rate})</h6>
-                      <div className="weight-scenario">
-                        <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
-                        <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
-                        <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * (learning_rate || 0))}</p>
-                        <div className="updated-weight bg-light p-2 rounded">
-                          <p><strong>New Weight:</strong> {formatValue(updatedWeightsData[0] && updatedWeightsData[0][0])}</p>
-                        </div>
-                      </div>
-                      <div className="scenario-comment mt-3">
-                        <p className="text-muted">
-                          Current learning rate provides a balanced update - significant enough for learning but controlled for stability.
-                        </p>
-                      </div>
-                    </div>
-                  </Col>
-                  
-                  <Col md={4}>
-                    <div className="learning-rate-scenario p-3 border rounded">
-                      <h6 className="text-center">Large Learning Rate (η = 0.1)</h6>
-                      <div className="weight-scenario">
-                        <p><strong>Initial Weight:</strong> {formatValue(initialWeightsData[0] && initialWeightsData[0][0])}</p>
-                        <p><strong>Weight Gradient:</strong> {formatValue(weightGradData[0] && weightGradData[0][0])}</p>
-                        <p><strong>Update Amount:</strong> {formatValue((weightGradData[0] && weightGradData[0][0] || 0) * 0.1)}</p>
-                        <div className="updated-weight">
-                          <p><strong>New Weight:</strong> {formatValue((initialWeightsData[0] && initialWeightsData[0][0] || 0) - (weightGradData[0] && weightGradData[0][0] || 0) * 0.1)}</p>
-                        </div>
-                      </div>
-                      <div className="scenario-comment mt-3">
-                        <p className="text-muted">
-                          Large learning rate causes dramatic weight changes, potentially faster convergence but risk of overshooting or divergence.
-                        </p>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-              ) : (
-                <Alert variant="info">
-                  Learning rate comparison requires weight gradient and initial weights data.
-                </Alert>
-              )}
             </div>
           </Tab.Pane>
         </Tab.Content>
@@ -851,8 +840,6 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
           position: relative;
         }
         
-
-        
         .tensor-table td.highlighted {
           box-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
           z-index: 10;
@@ -894,8 +881,6 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
           border-radius: 5px;
           margin-top: 10px;
         }
-        
-
         
         /* Step-by-step calculation styles */
         .calculation-step {
