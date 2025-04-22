@@ -12,7 +12,7 @@ const TensorVisualizer = ({ tensor }) => {
       <div className="tensor-visualization">
         <div className="tensor-row">
           {tensor.map((value, i) => (
-            <div key={i} className="tensor-cell">{value.toFixed(2)}</div>
+            <div key={i} className="tensor-cell">{value.toFixed(6)}</div>
           ))}
         </div>
       </div>
@@ -33,7 +33,7 @@ const TensorVisualizer = ({ tensor }) => {
                 color: Math.abs(value) > 5 ? 'white' : 'black'
               }}
             >
-              {value.toFixed(2)}
+              {value.toFixed(6)}
             </div>
           ))}
         </div>

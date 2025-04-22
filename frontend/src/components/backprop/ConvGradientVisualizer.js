@@ -122,7 +122,7 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
         const outputGradValue = displayOutputGrad[i][j];
         const term = outputGradValue * inputValue;
         
-        terms.push(`(${outputGradValue.toFixed(1)} \\cdot ${inputValue.toFixed(1)})`);
+        terms.push(`(${outputGradValue.toFixed(6)} \\cdot ${inputValue.toFixed(6)})`);
         sum += term;
       }
     }
@@ -135,7 +135,7 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
     });
     
     // Step 3: Final result
-    const actualGradient = displayWeightGrad[row][col].toFixed(1);
+    const actualGradient = displayWeightGrad[row][col].toFixed(6);
     steps.push({
       description: "Final result",
       equation: `\\frac{\\partial L}{\\partial W_{${row},${col}}} = ${actualGradient}`,
@@ -146,7 +146,7 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
   };
 
   const gradientSteps = calculateGradientSteps();
-  const currentValue = displayWeightGrad[selectedPosition.row][selectedPosition.col].toFixed(1);
+  const currentValue = displayWeightGrad[selectedPosition.row][selectedPosition.col].toFixed(6);
   
   return (
     <div className="conv-gradient-visualizer">
