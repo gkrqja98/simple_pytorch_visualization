@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { Row, Col, Form, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from '../TensorVisualizer';
 import AnimatedCalculation from '../AnimatedCalculation';
@@ -9,6 +9,28 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
   console.log('Output Gradient:', outputGrad);
   console.log('Input Tensor:', inputTensor);
   console.log('Weight Gradient:', weightGrad);
+  
+  // 값의 포맷팅 함수 - 소수점 자릿수 조절 및 표시 최적화
+  const formatValue = (value) => {
+    // 전체 값은 정확한 값
+    const fullPrecision = value.toFixed(6);
+    
+    // 화면에 표시될 값 - 크기에 따라 다르게 처리
+    let displayValue;
+    
+    if (Math.abs(value) < 0.0001) {
+      // 매우 작은 값은 과학적 표기법 사용
+      displayValue = value.toExponential(2);
+    } else if (Math.abs(value) < 0.01) {
+      // 작은 값은 최대 4자리까지 표시
+      displayValue = value.toFixed(4);
+    } else {
+      // 일반적인 값은 2자리까지 표시
+      displayValue = value.toFixed(2);
+    }
+    
+    return { displayValue, fullPrecision };
+  };
   
   // State for the selected kernel gradient position
   const [selectedPosition, setSelectedPosition] = useState({ row: 0, col: 0 });
@@ -122,7 +144,11 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
         const outputGradValue = displayOutputGrad[i][j];
         const term = outputGradValue * inputValue;
         
-        terms.push(`(${outputGradValue.toFixed(6)} \\cdot ${inputValue.toFixed(6)})`);
+        // Format values for display in equation
+        const outputGradFormatted = formatValue(outputGradValue).displayValue;
+        const inputFormatted = formatValue(inputValue).displayValue;
+        
+        terms.push(`(${outputGradFormatted} \\cdot ${inputFormatted})`);
         sum += term;
       }
     }
@@ -135,18 +161,21 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
     });
     
     // Step 3: Final result
-    const actualGradient = displayWeightGrad[row][col].toFixed(6);
+    const gradientValue = displayWeightGrad[row][col];
+    const { displayValue, fullPrecision } = formatValue(gradientValue);
+    
     steps.push({
       description: "Final result",
-      equation: `\\frac{\\partial L}{\\partial W_{${row},${col}}} = ${actualGradient}`,
-      result: actualGradient
+      equation: `\\frac{\\partial L}{\\partial W_{${row},${col}}} = ${displayValue}`,
+      result: fullPrecision
     });
     
     return steps;
   };
 
   const gradientSteps = calculateGradientSteps();
-  const currentValue = displayWeightGrad[selectedPosition.row][selectedPosition.col].toFixed(6);
+  const gradientValue = displayWeightGrad[selectedPosition.row][selectedPosition.col];
+  const { displayValue, fullPrecision } = formatValue(gradientValue);
   
   return (
     <div className="conv-gradient-visualizer">
@@ -177,7 +206,12 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
         
         <div className="current-calculation mb-4">
           <h6>Current Calculation Position: ({selectedPosition.row}, {selectedPosition.col})</h6>
-          <h6>Gradient Value: {currentValue}</h6>
+          <OverlayTrigger
+            placement="top"
+            overlay={<Tooltip>{fullPrecision}</Tooltip>}
+          >
+            <h6>Gradient Value: {displayValue}</h6>
+          </OverlayTrigger>
         </div>
         
         <Row>
@@ -207,7 +241,13 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
                 </div>
                 {step.result && (
                   <div className="result">
-                    <strong>Result: {step.result}</strong>
+                    <strong>Result: </strong>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip>{step.result}</Tooltip>}
+                    >
+                      <span>{step.result}</span>
+                    </OverlayTrigger>
                   </div>
                 )}
               </div>

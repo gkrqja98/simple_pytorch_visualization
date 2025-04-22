@@ -91,8 +91,8 @@
 }
 
 .tensor-cell {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,6 +101,10 @@
   font-family: monospace;
   font-size: 0.9rem;
   transition: all 0.3s;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 4px;
 }
 
 /* 계산 과정 시각화 관련 스타일 */
@@ -182,18 +186,21 @@
 
 .step {
   display: flex;
-  margin-bottom: 15px;
-  padding-bottom: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
   border-bottom: 1px dashed #dee2e6;
+  align-items: flex-start;
 }
 
 .step:last-child {
   border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .step-number {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   background-color: #007bff;
   color: white;
   border-radius: 50%;
@@ -203,15 +210,20 @@
   font-weight: bold;
   margin-right: 15px;
   flex-shrink: 0;
+  font-size: 1.1rem;
 }
 
 .step-content {
   flex-grow: 1;
+  width: calc(100% - 51px); /* 36px + 15px margin */
+  overflow-x: hidden;
 }
 
 .step-description {
-  font-weight: 500;
-  margin-bottom: 10px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #495057;
+  font-size: 1rem;
 }
 
 .equation-container {
@@ -219,11 +231,25 @@
   padding: 10px;
   border-radius: 5px;
   overflow-x: auto;
+  margin: 10px 0;
+  max-width: 100%;
+}
+
+.equation-container .katex-display {
+  margin: 0.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 5px;
 }
 
 .result {
-  margin-top: 10px;
+  margin-top: 15px;
   color: #28a745;
+  font-size: 1.05rem;
+  background-color: #f8fff8;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border-left: 4px solid #28a745;
 }
 
 .position-selector {
@@ -233,9 +259,21 @@
 
 .current-calculation {
   background-color: #e3f2fd;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-left: 4px solid #007bff;
+}
+
+.current-calculation h6 {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.current-calculation h6:last-child {
+  margin-bottom: 0;
+  font-size: 1.1rem;
 }
 
 /* 반응형 레이아웃 */
