@@ -1,7 +1,7 @@
 import React from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-const TensorVisualizer = ({ tensor }) => {
+const TensorVisualizer = ({ tensor, highlightPosition }) => {
   // 텐서가 없거나 유효하지 않은 경우 처리
   if (!tensor || !Array.isArray(tensor)) {
     return <div>유효한 텐서 데이터가 없습니다.</div>;
@@ -17,13 +17,16 @@ const TensorVisualizer = ({ tensor }) => {
     
     if (Math.abs(value) < 0.0001) {
       // 매우 작은 값은 과학적 표기법 사용
-      displayValue = value.toExponential(2);
+      displayValue = value.toExponential(3);
     } else if (Math.abs(value) < 0.01) {
-      // 작은 값은 최대 4자리까지 표시
+      // 작은 값은 최대 5자리까지 표시
+      displayValue = value.toFixed(5);
+    } else if (Math.abs(value) < 0.1) {
+      // 중간 크기 값은 4자리까지 표시
       displayValue = value.toFixed(4);
     } else {
-      // 일반적인 값은 2자리까지 표시
-      displayValue = value.toFixed(2);
+      // 일반적인 값은 3자리까지 표시
+      displayValue = value.toFixed(3);
     }
     
     return { displayValue, fullPrecision };
@@ -67,8 +70,12 @@ const TensorVisualizer = ({ tensor }) => {
                 <div 
                   className="tensor-cell"
                   style={{
-                    backgroundColor: `rgba(0, 123, 255, ${Math.abs(value) / 10})`,
-                    color: Math.abs(value) > 5 ? 'white' : 'black'
+                    backgroundColor: highlightPosition && highlightPosition.row === i && highlightPosition.col === j 
+                      ? `rgba(255, 193, 7, 0.8)` // 선택된 위치는 노란색 강조
+                      : `rgba(0, 123, 255, ${Math.abs(value) / 10})`,
+                    color: Math.abs(value) > 5 ? 'white' : 'black',
+                    borderWidth: highlightPosition && highlightPosition.row === i && highlightPosition.col === j ? '2px' : '1px',
+                    borderColor: highlightPosition && highlightPosition.row === i && highlightPosition.col === j ? '#ff8c00' : 'transparent'
                   }}
                 >
                   {displayValue}

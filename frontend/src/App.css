@@ -290,3 +290,57 @@
     height: 30px;
   }
 }
+
+/* Weight 업데이트 시각화 스타일 */
+.weight-update-visualization {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 30px;
+  background-color: #fff8e1;
+  position: relative;
+}
+
+.weight-update-visualization::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 15px solid #fff8e1;
+}
+
+/* Weight 업데이트 시각화용 특별 셀 스타일 */
+.weight-update-visualization .tensor-cell {
+  width: 90px; /* 더 넓게 조정 */
+  height: 45px;
+  font-size: 1rem;
+  font-family: 'Consolas', monospace;
+  padding: 0 6px; /* 좌우 여백 조절 */
+}
+
+.weight-update-visualization .calculation-steps {
+  background-color: #fffdf7;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.weight-update-visualization .result {
+  font-family: 'Consolas', monospace;
+  font-size: 1.1rem;
+  background-color: #f0f8ff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border-left: 4px solid #0277bd;
+  margin-top: 15px;
+  word-break: break-all; /* 긴 소수점 값도 잘리는데 도움 */
+}
+
+.weight-update-visualization .step-number {
+  background-color: #ff9800;
+}

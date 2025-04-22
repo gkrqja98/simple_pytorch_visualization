@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Row, Col, Form, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Row, Col, Form, Button, OverlayTrigger, Tooltip, Card } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from '../TensorVisualizer';
 import AnimatedCalculation from '../AnimatedCalculation';
 
-const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
+const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad, initialWeights, updatedWeights, learningRate = 0.01 }) => {
   // 디버깅을 위한 콘솔 로그 추가
   console.log('Output Gradient:', outputGrad);
   console.log('Input Tensor:', inputTensor);
   console.log('Weight Gradient:', weightGrad);
+  console.log('Initial Weights:', initialWeights);
+  console.log('Updated Weights:', updatedWeights);
+  console.log('Learning Rate:', learningRate);
   
   // 값의 포맷팅 함수 - 소수점 자릿수 조절 및 표시 최적화
   const formatValue = (value) => {
@@ -20,13 +23,16 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
     
     if (Math.abs(value) < 0.0001) {
       // 매우 작은 값은 과학적 표기법 사용
-      displayValue = value.toExponential(2);
+      displayValue = value.toExponential(3);
     } else if (Math.abs(value) < 0.01) {
-      // 작은 값은 최대 4자리까지 표시
+      // 작은 값은 최대 5자리까지 표시
+      displayValue = value.toFixed(5);
+    } else if (Math.abs(value) < 0.1) {
+      // 중간 크기 값은 4자리까지 표시
       displayValue = value.toFixed(4);
     } else {
-      // 일반적인 값은 2자리까지 표시
-      displayValue = value.toFixed(2);
+      // 일반적인 값은 3자리까지 표시
+      displayValue = value.toFixed(3);
     }
     
     return { displayValue, fullPrecision };
@@ -177,6 +183,91 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
   const gradientValue = displayWeightGrad[selectedPosition.row][selectedPosition.col];
   const { displayValue, fullPrecision } = formatValue(gradientValue);
   
+  // 샘플 가중치 데이터 (실제 데이터가 없을 경우 사용)
+  const sampleInitialWeights = [
+    [1.0, 0.5],
+    [0.5, 1.0]
+  ];
+  
+  const sampleUpdatedWeights = [
+    [0.985, 0.4875],
+    [0.4825, 0.9775]
+  ];
+  
+  // 실제 데이터 또는 샘플 데이터 사용
+  const displayInitialWeights = initialWeights || sampleInitialWeights;
+  const displayUpdatedWeights = updatedWeights || sampleUpdatedWeights;
+  const displayLearningRate = learningRate || 0.01;
+  
+  // 선택된 가중치 위치에 대한 업데이트 계산 단계
+  const calculateWeightUpdateSteps = () => {
+    const { row, col } = selectedPosition;
+    const steps = [];
+    
+    // 현재 선택된 위치의 값들
+    const initialWeight = displayInitialWeights[row][col];
+    const weightGradVal = displayWeightGrad[row][col];
+    const updatedWeight = displayUpdatedWeights[row][col];
+    
+    // 가중치 업데이트 공식
+    steps.push({
+      description: `Weight update formula for position (${row},${col})`,
+      equation: "W_{new} = W_{old} - \\eta \\cdot \\frac{\\partial L}{\\partial W}"
+    });
+    
+    // 값 대입
+    const initialWeightFormatted = initialWeight.toFixed(6); // 6자리까지 정확히 표시
+    const gradientFormatted = weightGradVal.toFixed(6); // 6자리까지 정확히 표시
+    const lrFormatted = displayLearningRate.toFixed(6); // 6자리까지 정확히 표시
+    
+    steps.push({
+      description: "Substituting the values",
+      equation: `W_{new} = ${initialWeightFormatted} - ${lrFormatted} \\cdot (${gradientFormatted})`
+    });
+    
+    // 계산 과정 표시
+    const gradientTerm = displayLearningRate * weightGradVal;
+    const gradientTermFormatted = gradientTerm.toFixed(6); // 6자리까지 정확히 표시
+    
+    steps.push({
+      description: "Calculating the gradient term",
+      equation: `${lrFormatted} \\cdot (${gradientFormatted}) = ${gradientTermFormatted}`
+    });
+    
+    // 계산 결과
+    const expectedUpdatedWeight = initialWeight - displayLearningRate * weightGradVal;
+    const expectedFormatted = expectedUpdatedWeight.toFixed(6); // 6자리까지 정확히 표시
+    
+    steps.push({
+      description: "Final calculation",
+      equation: `W_{new} = ${initialWeightFormatted} - (${gradientTermFormatted}) = ${expectedFormatted}`,
+      result: expectedFormatted
+    });
+    
+    // 실제 업데이트된 가중치가 계산값과 조금 다를 수 있음
+    const updatedFormatted = updatedWeight.toFixed(6); // 6자리까지 정확히 표시
+    
+    if (Math.abs(expectedUpdatedWeight - updatedWeight) > 0.0001) {
+      steps.push({
+        description: "Actual updated weight (may differ slightly due to precision)",
+        equation: `W_{new} = ${updatedFormatted}`,
+        result: updatedFormatted
+      });
+    }
+    // 계산 결과와 실제 값이 정확히 동일한 경우에도 정확한 값을 보여주기 위해 추가
+    else {
+      steps.push({
+        description: "Final updated weight",
+        equation: `W_{new} = ${updatedFormatted}`,
+        result: updatedFormatted
+      });
+    }
+    
+    return steps;
+  };
+  
+  const weightUpdateSteps = calculateWeightUpdateSteps();
+  
   return (
     <div className="conv-gradient-visualizer">
       <div className="calculation-visualization">
@@ -253,6 +344,75 @@ const ConvGradientVisualizer = ({ outputGrad, inputTensor, weightGrad }) => {
               </div>
             </div>
           ))}
+        </div>
+        
+        {/* Weight Update Visualization Section */}
+        <div className="weight-update-visualization mt-5">
+          <h5>Weight Update Visualization</h5>
+          <p className="mb-4">
+            After calculating the gradient, we update the weights using gradient descent with learning rate {displayLearningRate}.
+          </p>
+          
+          <Row>
+            <Col md={4}>
+              <Card className="mb-3">
+                <Card.Header>Initial Weight</Card.Header>
+                <Card.Body>
+                  <TensorVisualizer tensor={displayInitialWeights} highlightPosition={selectedPosition} />
+                </Card.Body>
+              </Card>
+            </Col>
+            
+            <Col md={4}>
+              <Card className="mb-3">
+                <Card.Header>Weight Gradient</Card.Header>
+                <Card.Body>
+                  <TensorVisualizer tensor={displayWeightGrad} highlightPosition={selectedPosition} />
+                </Card.Body>
+              </Card>
+            </Col>
+            
+            <Col md={4}>
+              <Card className="mb-3">
+                <Card.Header>Updated Weight</Card.Header>
+                <Card.Body>
+                  <TensorVisualizer tensor={displayUpdatedWeights} highlightPosition={selectedPosition} />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          
+          <div className="calculation-steps mt-4">
+            <h6>Weight Update Steps for Position ({selectedPosition.row}, {selectedPosition.col})</h6>
+            {weightUpdateSteps.map((step, index) => (
+              <div key={`update-${index}`} className="step">
+                <div className="step-number">{index + 1}</div>
+                <div className="step-content">
+                  <div className="step-description">{step.description}</div>
+                  <div className="equation-container">
+                    <BlockMath math={step.equation} />
+                  </div>
+                  {step.result && (
+                    <div className="result">
+                      <strong>Result: </strong>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip>{step.result}</Tooltip>}
+                      >
+                        <span>{step.result}</span>
+                      </OverlayTrigger>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="references mt-4">
+            <p className="text-muted small">
+              <strong>Reference:</strong> Ruder, S. (2016). An overview of gradient descent optimization algorithms. arXiv preprint arXiv:1609.04747.
+            </p>
+          </div>
         </div>
       </div>
     </div>
