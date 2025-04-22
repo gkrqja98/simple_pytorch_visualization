@@ -25,31 +25,33 @@ class SimpleCNN(nn.Module):
 
     def forward_with_intermediates(self, x):
         """중간 결과를 저장하면서 순전파 수행"""
-        intermediates = {'input': x.clone()}
+        # 역전파를 위해 각 중간 단계를 보존하여 그래디언트 계산이 가능하도록 함
+        x = x.clone().detach().requires_grad_(True)
+        intermediates = {'input': x}
         
         # 합성곱
         conv_out = self.conv1(x)
-        intermediates['conv_out'] = conv_out.clone()
+        conv_out.retain_grad()  # 그래디언트 보존 명시적 설정
+        intermediates['conv_out'] = conv_out
         
         # ReLU
         relu_out = F.relu(conv_out)
-        intermediates['relu_out'] = relu_out.clone()
+        relu_out.retain_grad()  # 그래디언트 보존 명시적 설정
+        intermediates['relu_out'] = relu_out
         
         # 풀링
         pool_out = self.pool1(relu_out)
-        intermediates['pool_out'] = pool_out.clone()
+        pool_out.retain_grad()  # 그래디언트 보존 명시적 설정
+        intermediates['pool_out'] = pool_out
         
         # 평탄화
         flatten = pool_out.view(pool_out.size(0), -1)
-        intermediates['flatten'] = flatten.clone()
+        flatten.retain_grad()  # 그래디언트 보존 명시적 설정
+        intermediates['flatten'] = flatten
         
         # 완전 연결 계층
         fc_out = self.fc(flatten)
-        intermediates['fc_out'] = fc_out.clone()
-        
-        # 중간 텐서들에 requires_grad=True 설정하여 그래디언트 계산 보장
-        for key, tensor in intermediates.items():
-            if tensor.requires_grad == False and tensor.dtype.is_floating_point:
-                tensor.requires_grad_(True)
+        fc_out.retain_grad()  # 그래디언트 보존 명시적 설정
+        intermediates['fc_out'] = fc_out
         
         return fc_out, intermediates

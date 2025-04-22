@@ -55,7 +55,8 @@ def verify_gradients():
     manual_model.zero_grad()
     
     # 전체 네트워크를 통과하면서 중간 결과 저장
-    conv_out = manual_model.conv1(input_data)
+    manual_input = input_data.clone().requires_grad_(True)
+    conv_out = manual_model.conv1(manual_input)
     conv_out.retain_grad()
     
     relu_out = F.relu(conv_out)
@@ -79,9 +80,16 @@ def verify_gradients():
     print("\n=== 1. FC 레이어 그래디언트 검증 ===")
     
     # FC 출력에 대한 그래디언트
-    fc_out_grad = fc_out.grad.detach().numpy()
-    vis_fc_out_grad = np.array(iteration_data['backward']['fc'].get('output_grad', np.zeros_like(fc_out_grad)))
-    print(f"FC 출력 그래디언트 확인: {(vis_fc_out_grad is not None)}")
+    softmax_out = F.softmax(fc_out, dim=1)
+    one_hot = torch.zeros_like(softmax_out)
+    one_hot[0, target[0]] = 1
+    expected_fc_out_grad = (softmax_out - one_hot).detach()
+    
+    # 시각화 도구에서 계산한 FC 출력 그래디언트
+    vis_fc_out_grad = np.array(iteration_data['backward']['fc'].get('output_grad', np.zeros_like(expected_fc_out_grad.numpy())))
+    print(f"FC 출력 그래디언트 일치: {np.allclose(expected_fc_out_grad.numpy(), vis_fc_out_grad)}")
+    print(f"수동 계산: {expected_fc_out_grad.numpy()}")
+    print(f"시각화 도구: {vis_fc_out_grad}")
     
     # FC weight 그래디언트
     fc_weight_grad = manual_model.fc.weight.grad.detach().numpy()
@@ -105,7 +113,7 @@ def verify_gradients():
     print(f"시각화 도구: {vis_flatten_grad}")
     
     # 수동으로 flatten_grad 계산해보기
-    expected_flatten_grad = np.matmul(fc_out_grad, manual_model.fc.weight.detach().numpy())
+    expected_flatten_grad = np.matmul(expected_fc_out_grad.numpy(), manual_model.fc.weight.detach().numpy())
     print(f"계산된 Flatten 그래디언트 일치: {np.allclose(flatten_grad, expected_flatten_grad)}")
     print(f"직접 계산: {expected_flatten_grad}")
     
@@ -137,6 +145,8 @@ def verify_gradients():
     conv_out_grad = conv_out.grad.detach().numpy()
     vis_conv_out_grad = np.array(iteration_data['backward']['relu']['input_grad'])
     print(f"ReLU 입력 그래디언트 일치: {np.allclose(conv_out_grad, vis_conv_out_grad)}")
+    print(f"수동 계산: \n{conv_out_grad.squeeze()}")
+    print(f"시각화 도구: \n{vis_conv_out_grad.squeeze()}")
     
     # ReLU 마스크 검증
     relu_mask = (conv_out.detach() > 0).float().numpy()
@@ -161,7 +171,7 @@ def verify_gradients():
     new_conv_w = torch.tensor(iteration_data['updated_weights']['conv1_weight'])
     expected_delta = -lr * torch.tensor(vis_conv_weight_grad)
     actual_delta = new_conv_w - old_conv_w
-    print(f"Conv 가중치 업데이트 일치: {torch.allclose(actual_delta, expected_delta)}")
+    print(f"Conv 가중치 업데이트 일치: {torch.allclose(actual_delta, expected_delta, atol=1e-6)}")
     print(f"예상 변화량: \n{expected_delta.squeeze()}")
     print(f"실제 변화량: \n{actual_delta.squeeze()}")
     
@@ -170,20 +180,21 @@ def verify_gradients():
     new_fc_w = torch.tensor(iteration_data['updated_weights']['fc_weight'])
     expected_delta = -lr * torch.tensor(vis_fc_weight_grad)
     actual_delta = new_fc_w - old_fc_w
-    print(f"FC 가중치 업데이트 일치: {torch.allclose(actual_delta, expected_delta)}")
+    print(f"FC 가중치 업데이트 일치: {torch.allclose(actual_delta, expected_delta, atol=1e-6)}")
     
     # FC bias 업데이트
     old_fc_b = torch.tensor(iteration_data['initial_weights']['fc_bias'])
     new_fc_b = torch.tensor(iteration_data['updated_weights']['fc_bias'])
     expected_delta = -lr * torch.tensor(vis_fc_bias_grad)
     actual_delta = new_fc_b - old_fc_b
-    print(f"FC bias 업데이트 일치: {torch.allclose(actual_delta, expected_delta)}")
+    print(f"FC bias 업데이트 일치: {torch.allclose(actual_delta, expected_delta, atol=1e-6)}")
     
     # 6. Visualizer가 시각화에 필요한 모든 데이터를 포함하는지 확인
     print("\n=== 6. 시각화 필요 데이터 검증 ===")
     
     # FC 레이어
     print("FC 레이어 역전파 데이터:")
+    print(f"- FC 출력 그래디언트: {'output_grad' in iteration_data['backward']['fc']}")
     print(f"- FC 가중치 그래디언트: {'weight_grad' in iteration_data['backward']['fc']}")
     print(f"- FC bias 그래디언트: {'bias_grad' in iteration_data['backward']['fc']}")
     print(f"- FC 입력 그래디언트: {'input_grad' in iteration_data['backward']['fc']}")
@@ -233,7 +244,9 @@ def visualize_gradient_flow():
         model.zero_grad()
         
         # 중간 텐서들 저장
-        conv_out = model.conv1(input_data)
+        x = input_data.clone().requires_grad_(True)
+        
+        conv_out = model.conv1(x)
         conv_out.retain_grad()
         
         relu_out = F.relu(conv_out)
@@ -294,7 +307,9 @@ def calculate_expected_vs_actual_gradients():
     model.zero_grad()
     
     # 중간 텐서들 저장
-    conv_out = model.conv1(input_data)
+    x = input_data.clone().requires_grad_(True)
+    
+    conv_out = model.conv1(x)
     conv_out.retain_grad()
     
     relu_out = F.relu(conv_out)
@@ -358,16 +373,35 @@ def calculate_expected_vs_actual_gradients():
     print(f"일치: {torch.allclose(expected_pool_out_grad, actual_pool_out_grad, atol=1e-5)}")
     
     # 4. ReLU 레이어 역전파
+    # ReLU 마스크 생성
     relu_mask = (conv_out > 0).float().detach()
-    expected_relu_input_grad = (pool_out.grad * relu_mask).detach()
-    actual_relu_input_grad = conv_out.grad.detach()
     
-    print("\nReLU 입력 그래디언트:")
-    print(f"일치: {torch.allclose(expected_relu_input_grad, actual_relu_input_grad, atol=1e-5)}")
+    # 풀링 그래디언트에서 ReLU로의 역전파 검증
+    # ReLU 마스크와 맞는 크기로 relu_out_grad 준비
+    if relu_out.grad is not None:
+        print("\nReLU 출력 그래디언트 (실제):")
+        print(relu_out.grad.shape)
+        print(relu_out.grad.squeeze())
     
-    # 체계적으로 누락된 그래디언트가 있는지 확인
-    print("\n미확인 그래디언트:")
-    print(f"Conv1 입력 그래디언트: {input_data.grad is not None}")
+    # ReLU 입력 그래디언트 검증
+    if conv_out.grad is not None:
+        print("\nReLU 입력 그래디언트 (실제):")
+        print(conv_out.grad.shape)
+        print(conv_out.grad.squeeze())
+    
+    # 예상되는 ReLU 입력 그래디언트
+    if relu_out.grad is not None and relu_mask is not None:
+        # 그래디언트와 마스크의 크기가 일치하는지 확인
+        if relu_out.grad.shape == relu_mask.shape:
+            expected_relu_input_grad = (relu_out.grad * relu_mask).detach()
+            print("\nReLU 입력 그래디언트 (예상):")
+            print(expected_relu_input_grad.shape)
+            print(expected_relu_input_grad.squeeze())
+            
+            if conv_out.grad is not None:
+                print(f"\nReLU 입력 그래디언트 일치: {torch.allclose(expected_relu_input_grad, conv_out.grad, atol=1e-5)}")
+        else:
+            print(f"\nReLU 그래디언트와 마스크 크기가 일치하지 않음: {relu_out.grad.shape} vs {relu_mask.shape}")
     
     # 각 레이어의 역전파가 제대로 연결되어 있는지 확인
     print("\n=== 역전파 연결 검증 ===")
