@@ -2,9 +2,14 @@ import React from 'react';
 import { Row, Col, Alert } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from '../TensorVisualizer';
-import ConvBackpropVisualizer from './ConvBackpropVisualizer';
+import ConvGradientVisualizer from './ConvGradientVisualizer';
 
-const ConvBackprop = ({ backward, initial_weights, updated_weights, learning_rate }) => {
+const ConvBackprop = ({ backward, initial_weights, updated_weights, learning_rate, forward }) => {
+  // 디버깅을 위한 콘솔 로그 추가
+  console.log('Backward Data:', backward);
+  console.log('Initial Weights:', initial_weights);
+  console.log('Updated Weights:', updated_weights);
+  console.log('Forward Data:', forward);
   // Check if all required data is present
   if (!backward || !backward.conv) {
     return (
@@ -108,21 +113,20 @@ const ConvBackprop = ({ backward, initial_weights, updated_weights, learning_rat
         </Col>
       </Row>
       
-      {/* Enhanced Convolution Backpropagation Visualization */}
+      {/* Convolution Gradient Calculation Visualization */}
       <Row className="mt-5">
         <Col md={12}>
           <hr />
-          <h5 className="mb-4">Enhanced Convolution Gradient Flow Visualization</h5>
+          <h5 className="mb-4">Convolution Gradient Calculation Visualization</h5>
           {backward.conv && backward.conv.output_grad && backward.conv.weight_grad ? (
-            <ConvBackpropVisualizer 
-              backward={backward.conv}
-              initial_weights={initial_weights ? initial_weights.conv1_weight : null}
-              updated_weights={updated_weights ? updated_weights.conv1_weight : null}
-              learning_rate={learning_rate}
+            <ConvGradientVisualizer 
+              outputGrad={backward.conv.output_grad[0][0]}
+              inputTensor={forward && forward.conv && forward.conv.input_tensor ? forward.conv.input_tensor[0][0] : null}
+              weightGrad={backward.conv.weight_grad[0][0]}
             />
           ) : (
             <Alert variant="warning">
-              Missing data required for detailed convolution visualization.
+              Missing data required for convolution gradient visualization.
             </Alert>
           )}
         </Col>

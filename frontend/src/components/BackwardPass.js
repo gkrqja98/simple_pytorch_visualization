@@ -5,7 +5,7 @@ import MaxPoolBackprop from './backprop/MaxPoolBackprop';
 import ReluBackprop from './backprop/ReluBackprop';
 import ConvBackprop from './backprop/ConvBackprop';
 
-const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, learning_rate }) => {
+const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, learning_rate, forward }) => {
   return (
     <div className="backward-pass-container">
       <Accordion defaultActiveKey="0">
@@ -48,6 +48,7 @@ const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, l
               initial_weights={initial_weights}
               updated_weights={updated_weights}
               learning_rate={learning_rate}
+              forward={forward}
             />
           </Accordion.Body>
         </Accordion.Item>

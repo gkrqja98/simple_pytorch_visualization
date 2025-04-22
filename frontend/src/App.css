@@ -167,6 +167,77 @@
   animation: highlight 1s infinite;
 }
 
+/* 계산 단계 시각화 스타일 */
+.calculation-visualization {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #f8f9fa;
+}
+
+.calculation-steps {
+  margin-top: 20px;
+}
+
+.step {
+  display: flex;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #dee2e6;
+}
+
+.step:last-child {
+  border-bottom: none;
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex-grow: 1;
+}
+
+.step-description {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.equation-container {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+.result {
+  margin-top: 10px;
+  color: #28a745;
+}
+
+.position-selector {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.current-calculation {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
 /* 반응형 레이아웃 */
 @media (max-width: 768px) {
   .tensor-cell {

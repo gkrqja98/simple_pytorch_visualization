@@ -147,6 +147,7 @@ const IterationView = ({ iteration, iterationIndex }) => {
                 initial_weights={iteration.initial_weights}
                 updated_weights={iteration.updated_weights}
                 learning_rate={iteration.learning_rate}
+                forward={iteration.forward}
               />
             </Card.Body>
           </Card>
