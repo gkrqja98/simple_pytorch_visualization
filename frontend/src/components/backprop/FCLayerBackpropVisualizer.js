@@ -10,10 +10,19 @@ import AnimatedCalculation from '../AnimatedCalculation';
 const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updated_weights, learning_rate }) => {
   const [selectedOutput, setSelectedOutput] = useState(0);
   const [selectedWeight, setSelectedWeight] = useState({ i: 0, j: 0 });
+  const [decimalPlaces, setDecimalPlaces] = useState(6); // 소수점 자리 수 증가
   
   // Weight dimensions
   const outputSize = backward.weight_grad.length;
   const inputSize = backward.weight_grad[0].length;
+  
+  // Format values with scientific notation for very small numbers
+  const formatValue = (value) => {
+    if (Math.abs(value) < 0.000001) {
+      return value.toExponential(decimalPlaces - 1);
+    }
+    return value.toFixed(decimalPlaces);
+  };
   
   // Handle output neuron selection change
   const handleOutputChange = (event) => {
@@ -50,12 +59,12 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
       },
       {
         description: "Substituting values",
-        equation: `\\frac{\\partial L}{\\partial W_{${i},${j}}} = ${dldy.toFixed(4)} \\cdot ${x.toFixed(4)}`,
+        equation: `\\frac{\\partial L}{\\partial W_{${i},${j}}} = ${formatValue(dldy)} \\cdot ${formatValue(x)}`,
       },
       {
         description: "Result",
-        equation: `\\frac{\\partial L}{\\partial W_{${i},${j}}} = ${weightGrad.toFixed(4)}`,
-        result: weightGrad.toFixed(4)
+        equation: `\\frac{\\partial L}{\\partial W_{${i},${j}}} = ${formatValue(weightGrad)}`,
+        result: formatValue(weightGrad)
       }
     ];
     
@@ -76,12 +85,12 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
       },
       {
         description: "Substituting values",
-        equation: `W_{${i},${j}}^{new} = ${oldWeight.toFixed(4)} - ${learning_rate} \\cdot ${weightGrad.toFixed(4)}`,
+        equation: `W_{${i},${j}}^{new} = ${formatValue(oldWeight)} - ${learning_rate} \\cdot ${formatValue(weightGrad)}`,
       },
       {
         description: "Result",
-        equation: `W_{${i},${j}}^{new} = ${newWeight.toFixed(4)}`,
-        result: newWeight.toFixed(4)
+        equation: `W_{${i},${j}}^{new} = ${formatValue(newWeight)}`,
+        result: formatValue(newWeight)
       }
     ];
     
@@ -107,7 +116,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
     for (let i = 0; i < outputSize; i++) {
       const dldy = backward.output_grad[0][i];
       const weight = initial_weights.fc_weight[i][selectedInputIndex];
-      terms.push(`${dldy.toFixed(4)} \\cdot ${weight.toFixed(4)}`);
+      terms.push(`${formatValue(dldy)} \\cdot ${formatValue(weight)}`);
     }
     
     steps.push({
@@ -120,8 +129,8 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
     
     steps.push({
       description: "Result",
-      equation: `\\frac{\\partial L}{\\partial x_{${selectedInputIndex}}} = ${inputGrad.toFixed(4)}`,
-      result: inputGrad.toFixed(4)
+      equation: `\\frac{\\partial L}{\\partial x_{${selectedInputIndex}}} = ${formatValue(inputGrad)}`,
+      result: formatValue(inputGrad)
     });
     
     return steps;
@@ -134,6 +143,27 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
   return (
     <div className="fc-backprop-visualizer">
       <h5 className="mb-4">Fully Connected Layer Backpropagation Visualization</h5>
+      
+      {/* Decimal Places Control */}
+      <Row className="mb-3">
+        <Col md={6}>
+          <Form.Group>
+            <Form.Label>Decimal Places Precision:</Form.Label>
+            <Form.Select 
+              value={decimalPlaces}
+              onChange={(e) => setDecimalPlaces(Number(e.target.value))}
+            >
+              <option value="4">4 digits (0.0000)</option>
+              <option value="6">6 digits (0.000000)</option>
+              <option value="8">8 digits (0.00000000)</option>
+              <option value="10">10 digits (0.0000000000)</option>
+            </Form.Select>
+            <Form.Text className="text-muted">
+              Increase precision to see very small gradient values.
+            </Form.Text>
+          </Form.Group>
+        </Col>
+      </Row>
       
       {/* Layer Gradient Flow Visualization */}
       <div className="gradient-flow-visualization mb-4">
@@ -154,7 +184,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                       }}
                       onClick={() => setSelectedOutput(idx)}
                     >
-                      <div className="neuron-value">{backward.output_grad[0][idx].toFixed(4)}</div>
+                      <div className="neuron-value">{formatValue(backward.output_grad[0][idx])}</div>
                       <div className="neuron-label">∂L/∂y<sub>{idx}</sub></div>
                     </div>
                   ))}
@@ -205,7 +235,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                             border: i === selectedWeight.i && j === selectedWeight.j ? '2px solid #ffc107' : 'none'
                           }}
                         >
-                          {backward.weight_grad[i][j].toFixed(4)}
+                          {formatValue(backward.weight_grad[i][j])}
                         </div>
                       ) : null
                     ))
@@ -224,7 +254,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                       }}
                       onClick={() => setSelectedWeight({ i: selectedWeight.i, j: idx })}
                     >
-                      <div className="neuron-value">{backward.input_grad[0][idx].toFixed(4)}</div>
+                      <div className="neuron-value">{formatValue(backward.input_grad[0][idx])}</div>
                       <div className="neuron-label">∂L/∂x<sub>{idx}</sub></div>
                     </div>
                   ))}
@@ -354,7 +384,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                           key={j}
                           className={i === selectedWeight.i && j === selectedWeight.j ? 'selected' : ''}
                         >
-                          {value.toFixed(4)}
+                          {formatValue(value)}
                         </td>
                       ))}
                     </tr>
@@ -380,7 +410,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                             backgroundColor: `rgba(220, 53, 69, ${Math.min(Math.abs(value), 0.3)})`
                           }}
                         >
-                          {value.toFixed(4)}
+                          {formatValue(value)}
                         </td>
                       ))}
                     </tr>
@@ -403,7 +433,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                           key={j}
                           className={i === selectedWeight.i && j === selectedWeight.j ? 'selected' : ''}
                         >
-                          {value.toFixed(4)}
+                          {formatValue(value)}
                         </td>
                       ))}
                     </tr>
@@ -425,22 +455,22 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="old-weight px-4 py-2 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
                     <div><strong>Old Weight</strong></div>
-                    <div>W<sub>{selectedWeight.i},{selectedWeight.j}</sub><sup>old</sup> = {initial_weights.fc_weight[selectedWeight.i][selectedWeight.j].toFixed(4)}</div>
+                    <div>W<sub>{selectedWeight.i},{selectedWeight.j}</sub><sup>old</sup> = {formatValue(initial_weights.fc_weight[selectedWeight.i][selectedWeight.j])}</div>
                   </div>
                   
                   <div className="gradient-part px-4 py-2 mx-3">
                     <div><strong>Learning Rate × Gradient</strong></div>
-                    <div>η · ∂L/∂W<sub>{selectedWeight.i},{selectedWeight.j}</sub> = {learning_rate} · {backward.weight_grad[selectedWeight.i][selectedWeight.j].toFixed(4)} = {(learning_rate * backward.weight_grad[selectedWeight.i][selectedWeight.j]).toFixed(4)}</div>
+                    <div>η · ∂L/∂W<sub>{selectedWeight.i},{selectedWeight.j}</sub> = {learning_rate} · {formatValue(backward.weight_grad[selectedWeight.i][selectedWeight.j])} = {formatValue(learning_rate * backward.weight_grad[selectedWeight.i][selectedWeight.j])}</div>
                   </div>
                   
                   <div className="new-weight px-4 py-2 rounded" style={{ backgroundColor: '#e2f0d9', border: '1px solid #c5e0b4' }}>
                     <div><strong>New Weight</strong></div>
-                    <div>W<sub>{selectedWeight.i},{selectedWeight.j}</sub><sup>new</sup> = {updated_weights.fc_weight[selectedWeight.i][selectedWeight.j].toFixed(4)}</div>
+                    <div>W<sub>{selectedWeight.i},{selectedWeight.j}</sub><sup>new</sup> = {formatValue(updated_weights.fc_weight[selectedWeight.i][selectedWeight.j])}</div>
                   </div>
                 </div>
                 
                 <div className="update-equation mt-3">
-                  <BlockMath math={`W_{${selectedWeight.i},${selectedWeight.j}}^{new} = W_{${selectedWeight.i},${selectedWeight.j}}^{old} - \\eta \\cdot \\frac{\\partial L}{\\partial W_{${selectedWeight.i},${selectedWeight.j}}} = ${initial_weights.fc_weight[selectedWeight.i][selectedWeight.j].toFixed(4)} - ${learning_rate} \\cdot ${backward.weight_grad[selectedWeight.i][selectedWeight.j].toFixed(4)} = ${updated_weights.fc_weight[selectedWeight.i][selectedWeight.j].toFixed(4)}`} />
+                  <BlockMath math={`W_{${selectedWeight.i},${selectedWeight.j}}^{new} = W_{${selectedWeight.i},${selectedWeight.j}}^{old} - \\eta \\cdot \\frac{\\partial L}{\\partial W_{${selectedWeight.i},${selectedWeight.j}}} = ${formatValue(initial_weights.fc_weight[selectedWeight.i][selectedWeight.j])} - ${learning_rate} \\cdot ${formatValue(backward.weight_grad[selectedWeight.i][selectedWeight.j])} = ${formatValue(updated_weights.fc_weight[selectedWeight.i][selectedWeight.j])}`} />
                 </div>
               </div>
             </div>
@@ -529,7 +559,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
         
         .neuron-value {
           font-weight: bold;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
         }
         
         .neuron-label {
@@ -565,6 +595,7 @@ const FCLayerBackpropVisualizer = ({ backward, gradients, initial_weights, updat
           padding: 5px 8px;
           text-align: center;
           transition: all 0.3s;
+          font-size: 0.8rem;
         }
         
         .matrix-table td.selected {

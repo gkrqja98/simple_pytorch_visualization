@@ -8,12 +8,13 @@ import TensorVisualizer from '../TensorVisualizer';
  */
 const MaxPoolBackpropVisualizer = ({ backward }) => {
   const [selectedPosition, setSelectedPosition] = useState({ i: 0, j: 0 });
+  const [decimalPlaces, setDecimalPlaces] = useState(6); // 소수점 자리 수 증가
   
-  // Get tensor dimensions
-  const outputGradHeight = backward.output_grad[0][0].length;
-  const outputGradWidth = backward.output_grad[0][0][0].length;
-  const inputGradHeight = backward.input_grad[0][0].length;
-  const inputGradWidth = backward.input_grad[0][0][0].length;
+  // Get tensor dimensions - safely access properties
+  const outputGradHeight = backward?.output_grad?.[0]?.[0]?.length || 0;
+  const outputGradWidth = backward?.output_grad?.[0]?.[0]?.[0]?.length || 0;
+  const inputGradHeight = backward?.input_grad?.[0]?.[0]?.length || 0;
+  const inputGradWidth = backward?.input_grad?.[0]?.[0]?.[0]?.length || 0;
   
   // Create array of valid output positions
   const validPositions = [];
@@ -69,32 +70,45 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
   
   const { startRow, startCol, endRow, endCol } = getPoolingWindow();
   
-  // Find the max value position in the input window using gradient values
+  // Find the max value position in the input window using indices from forward pass
   const findMaxValuePosition = () => {
-    // Using verify_backprop.py results
-    if (selectedPosition.i === 0 && selectedPosition.j === 0) {
-      // Top-left window (0,0)
-      return { maxRow: 1, maxCol: 1, flatIndex: 3 }; // corresponds to position (1,1)
-    } else if (selectedPosition.i === 0 && selectedPosition.j === 1) {
-      // Top-right window (0,1)
-      return { maxRow: 1, maxCol: 2, flatIndex: 3 }; // corresponds to position (1,2)
-    } else if (selectedPosition.i === 1 && selectedPosition.j === 0) {
-      // Bottom-left window (1,0)
-      return { maxRow: 2, maxCol: 1, flatIndex: 3 }; // corresponds to position (2,1)
-    } else if (selectedPosition.i === 1 && selectedPosition.j === 1) {
-      // Bottom-right window (1,1)
-      return { maxRow: 2, maxCol: 2, flatIndex: 3 }; // corresponds to position (2,2)
+    // Using indices from forward pass which were saved during forward pass
+    if (!backward.indices) {
+      return { maxRow: -1, maxCol: -1, flatIndex: -1 };
     }
     
-    // Default fallback - should not happen with our data
+    const { i, j } = selectedPosition;
+    const poolIndices = backward.indices[0][0];
+    
+    // If we have the indices data, extract the relevant index
+    if (i < poolIndices.length && j < poolIndices[0].length) {
+      const flatIndex = poolIndices[i][j];
+      
+      // Convert the flat index back to 2D coordinates
+      // For a 2x2 window with stride 1
+      const windowWidth = 2;
+      const maxRow = Math.floor(flatIndex / windowWidth) + i;
+      const maxCol = (flatIndex % windowWidth) + j;
+      
+      return { maxRow, maxCol, flatIndex };
+    }
+    
     return { maxRow: -1, maxCol: -1, flatIndex: -1 };
   };
   
   const { maxRow, maxCol, flatIndex } = findMaxValuePosition();
   
-  // Get the gradient values
-  const outputGradValue = backward.output_grad[0][0][selectedPosition.i][selectedPosition.j];
-  const inputGradValue = maxRow >= 0 && maxCol >= 0 ? backward.input_grad[0][0][maxRow][maxCol] : 0;
+  // Get the gradient values (safely)
+  const outputGradValue = backward?.output_grad?.[0]?.[0]?.[selectedPosition.i]?.[selectedPosition.j] || 0;
+  const inputGradValue = maxRow >= 0 && maxCol >= 0 && backward?.input_grad?.[0]?.[0]?.[maxRow]?.[maxCol] || 0;
+  
+  // Format values with scientific notation for very small numbers
+  const formatValue = (value) => {
+    if (Math.abs(value) < 0.000001) {
+      return value.toExponential(decimalPlaces - 1);
+    }
+    return value.toFixed(decimalPlaces);
+  };
   
   // Generate steps for gradient backpropagation explanation
   const generateGradientSteps = () => {
@@ -103,7 +117,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
     const steps = [
       {
         description: `MaxPool gradient backpropagation for position (${i},${j})`,
-        equation: `\\frac{\\partial L}{\\partial O_{${i},${j}}} = ${outputGradValue.toFixed(4)}`
+        equation: `\\frac{\\partial L}{\\partial O_{${i},${j}}} = ${formatValue(outputGradValue)}`
       },
       {
         description: "MaxPool backpropagation rule",
@@ -123,13 +137,13 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
       // Show which position receives the gradient
       steps.push({
         description: `Gradient propagation to position (${maxRow},${maxCol})`,
-        equation: `\\frac{\\partial L}{\\partial I_{${maxRow},${maxCol}}} = \\frac{\\partial L}{\\partial O_{${i},${j}}} = ${outputGradValue.toFixed(4)}`
+        equation: `\\frac{\\partial L}{\\partial I_{${maxRow},${maxCol}}} = \\frac{\\partial L}{\\partial O_{${i},${j}}} = ${formatValue(outputGradValue)}`
       });
       
       steps.push({
         description: "Result",
-        equation: `\\frac{\\partial L}{\\partial I_{${maxRow},${maxCol}}} = ${inputGradValue.toFixed(4)}`,
-        result: inputGradValue.toFixed(4)
+        equation: `\\frac{\\partial L}{\\partial I_{${maxRow},${maxCol}}} = ${formatValue(inputGradValue)}`,
+        result: formatValue(inputGradValue)
       });
     } else {
       steps.push({
@@ -143,9 +157,39 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
   
   const gradientSteps = generateGradientSteps();
   
+  // Check if we have all necessary data from backend
+  if (!backward || !backward.output_grad || !backward.input_grad) {
+    return (
+      <div className="alert alert-warning">
+        Missing MaxPool gradient data from backend. Please ensure the backend is properly calculating MaxPool gradients.
+      </div>
+    );
+  }
+  
   return (
     <div className="maxpool-backprop-visualizer">
       <h5 className="mb-4">MaxPool Backpropagation Visualization</h5>
+      
+      {/* Decimal Places Control */}
+      <Row className="mb-3">
+        <Col md={6}>
+          <Form.Group>
+            <Form.Label>Decimal Places Precision:</Form.Label>
+            <Form.Select 
+              value={decimalPlaces}
+              onChange={(e) => setDecimalPlaces(Number(e.target.value))}
+            >
+              <option value="4">4 digits (0.0000)</option>
+              <option value="6">6 digits (0.000000)</option>
+              <option value="8">8 digits (0.00000000)</option>
+              <option value="10">10 digits (0.0000000000)</option>
+            </Form.Select>
+            <Form.Text className="text-muted">
+              Increase precision to see very small gradient values.
+            </Form.Text>
+          </Form.Group>
+        </Col>
+      </Row>
       
       {/* Position Selection Controls */}
       <Row className="mb-3 align-items-center">
@@ -190,7 +234,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
             <strong>Current Output Position:</strong> ({selectedPosition.i}, {selectedPosition.j})
           </div>
           <div>
-            <strong>Output Gradient Value:</strong> {outputGradValue.toFixed(4)}
+            <strong>Output Gradient Value:</strong> {formatValue(outputGradValue)}
           </div>
         </div>
       </div>
@@ -216,7 +260,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                                 backgroundColor: `rgba(220, 53, 69, ${Math.min(Math.abs(value), 0.7)})`
                               }}
                             >
-                              {value.toFixed(4)}
+                              {formatValue(value)}
                             </td>
                           ))}
                         </tr>
@@ -256,12 +300,12 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                                   ${isMaxPosition ? "max-position" : ""}
                                 `}
                                 style={{ 
-                                  backgroundColor: Math.abs(value) > 0.0001 
+                                  backgroundColor: Math.abs(value) > 0.0000001 
                                     ? `rgba(0, 123, 255, ${Math.min(Math.abs(value), 0.7)})` 
                                     : (isInWindow ? 'rgba(173, 181, 189, 0.2)' : '')
                                 }}
                               >
-                                {value.toFixed(4)}
+                                {formatValue(value)}
                               </td>
                             );
                           })}
@@ -313,7 +357,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                 <p>
                   For the selected output position ({selectedPosition.i}, {selectedPosition.j}), 
                   the maximum value in the corresponding input window was at position ({maxRow}, {maxCol}). 
-                  Therefore, this position receives the full gradient of {outputGradValue.toFixed(4)}, 
+                  Therefore, this position receives the full gradient of {formatValue(outputGradValue)}, 
                   while all other positions in the window receive zero gradient.
                 </p>
               )}
@@ -360,7 +404,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                   <div className="output-gradient">
                     <div className="neuron">
                       <div className="value">
-                        {outputGradValue.toFixed(4)}
+                        {formatValue(outputGradValue)}
                       </div>
                       <div className="label">
                         ∂L/∂O<sub>{selectedPosition.i},{selectedPosition.j}</sub>
@@ -402,7 +446,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                                 >
                                   <div className="cell-content">
                                     <div className="position">({r},{c})</div>
-                                    <div className="grad-value">{value.toFixed(4)}</div>
+                                    <div className="grad-value">{formatValue(value)}</div>
                                     {isMaxPosition && (
                                       <div className="max-label">MAX</div>
                                     )}
@@ -430,7 +474,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
                       <div>
                         <p>Only position ({maxRow},{maxCol}) receives gradient:</p>
                         <div className="result-value">
-                          ∂L/∂I<sub>{maxRow},{maxCol}</sub> = {inputGradValue.toFixed(4)}
+                          ∂L/∂I<sub>{maxRow},{maxCol}</sub> = {formatValue(inputGradValue)}
                         </div>
                         <p>All other positions receive zero gradient</p>
                       </div>
@@ -471,6 +515,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
           width: 40px;
           height: 40px;
           transition: all 0.3s;
+          font-size: 0.8rem;
         }
         
         .tensor-table td.selected {
@@ -558,7 +603,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
         
         .neuron .value {
           font-weight: bold;
-          font-size: 1rem;
+          font-size: 0.8rem;
         }
         
         .neuron .label {
@@ -603,7 +648,7 @@ const MaxPoolBackpropVisualizer = ({ backward }) => {
         
         .grad-value {
           font-weight: bold;
-          font-size: 1rem;
+          font-size: 0.8rem;
         }
         
         .max-label {
