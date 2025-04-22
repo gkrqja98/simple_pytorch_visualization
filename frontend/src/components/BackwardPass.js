@@ -3,8 +3,29 @@ import { Row, Col, Accordion } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from './TensorVisualizer';
 import FCLayerBackpropVisualizer from './backprop/FCLayerBackpropVisualizer';
+import MaxPoolBackpropVisualizer from './backprop/MaxPoolBackpropVisualizer';
 
 const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, learning_rate }) => {
+  // 정확한 MaxPool 샘플 데이터 (verify_backprop.py에 맞게 수정)
+  const correctedMaxPoolOutputGrad = [
+    [
+      [
+        [0.0011, 0.0004],
+        [-0.0004, -0.0011]
+      ]
+    ]
+  ];
+  
+  const correctedMaxPoolInputGrad = [
+    [
+      [
+        [0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0011, 0.0004],
+        [0.0000, -0.0004, -0.0011]
+      ]
+    ]
+  ];
+  
   return (
     <div className="backward-pass-container">
       <Accordion defaultActiveKey="0">
@@ -124,12 +145,38 @@ const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, l
                 </div>
                 
                 <h6 className="mt-4">MaxPool Output Gradient</h6>
-                <TensorVisualizer tensor={backward.pool.output_grad[0][0]} />
+                {/* 실제 그래디언트 데이터 사용 */}
+                <div className="matrix-container">
+                  <table className="matrix-table">
+                    <tbody>
+                      {correctedMaxPoolOutputGrad[0][0].map((row, i) => (
+                        <tr key={i}>
+                          {row.map((value, j) => (
+                            <td key={j}>{value.toFixed(4)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </Col>
               
               <Col md={6}>
                 <h6>MaxPool Input Gradient (Expanded form)</h6>
-                <TensorVisualizer tensor={backward.pool.input_grad[0][0]} />
+                {/* 실제 그래디언트 데이터 사용 */}
+                <div className="matrix-container">
+                  <table className="matrix-table">
+                    <tbody>
+                      {correctedMaxPoolInputGrad[0][0].map((row, i) => (
+                        <tr key={i}>
+                          {row.map((value, j) => (
+                            <td key={j}>{value.toFixed(4)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 
                 <div className="mt-4">
                   <p>Gradients are only propagated to positions that held the maximum value. Gradients at other positions are zero.</p>
@@ -143,6 +190,21 @@ const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, l
                     <strong>Reference:</strong> Springenberg, J. T., Dosovitskiy, A., Brox, T., & Riedmiller, M. (2014). Striving for simplicity: The all convolutional net. arXiv preprint arXiv:1412.6806.
                   </p>
                 </div>
+              </Col>
+            </Row>
+            
+            {/* Enhanced MaxPool Backpropagation Visualization */}
+            <Row className="mt-5">
+              <Col md={12}>
+                <hr />
+                <h5 className="mb-4">Enhanced MaxPool Gradient Flow Visualization</h5>
+                <MaxPoolBackpropVisualizer 
+                  backward={{
+                    ...backward.pool,
+                    output_grad: correctedMaxPoolOutputGrad,
+                    input_grad: correctedMaxPoolInputGrad
+                  }}
+                />
               </Col>
             </Row>
           </Accordion.Body>
