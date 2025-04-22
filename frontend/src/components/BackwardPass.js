@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col, Accordion } from 'react-bootstrap';
 import { InlineMath, BlockMath } from 'react-katex';
 import TensorVisualizer from './TensorVisualizer';
+import FCLayerBackpropVisualizer from './backprop/FCLayerBackpropVisualizer';
 
 const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, learning_rate }) => {
   return (
@@ -86,6 +87,21 @@ const BackwardPass = ({ backward, gradients, initial_weights, updated_weights, l
                   <InlineMath math="W_{1,1}^{new} = W_{1,1}^{old} - \eta \cdot \frac{\partial L}{\partial W_{1,1}}" />
                   <InlineMath math="W_{1,1}^{new} = 0.1 - 0.01 \cdot \frac{\partial L}{\partial W_{1,1}}" />
                 </div>
+              </Col>
+            </Row>
+            
+            {/* Enhanced FC Layer Backpropagation Visualization */}
+            <Row className="mt-5">
+              <Col md={12}>
+                <hr />
+                <h5 className="mb-4">Enhanced Gradient Flow Visualization</h5>
+                <FCLayerBackpropVisualizer 
+                  backward={backward.fc} 
+                  gradients={gradients} 
+                  initial_weights={initial_weights}
+                  updated_weights={updated_weights}
+                  learning_rate={learning_rate}
+                />
               </Col>
             </Row>
           </Accordion.Body>
