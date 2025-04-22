@@ -122,7 +122,7 @@ class ModelVisualizer:
         conv_out.retain_grad()  # 그래디언트 보존 명시적 설정
         
         # ReLU
-        relu_out = F.relu(conv_out)
+        relu_out = F.relu(conv_out.clone())  # 클론으로 복사하여 인플레이스 문제 방지
         relu_out.retain_grad()  # 그래디언트 보존 명시적 설정
         
         # 풀링
@@ -130,7 +130,7 @@ class ModelVisualizer:
         pool_out.retain_grad()  # 그래디언트 보존 명시적 설정
         
         # 평탄화
-        flatten = pool_out.view(pool_out.size(0), -1)
+        flatten = pool_out.reshape(pool_out.size(0), -1)  # view 대신 reshape 사용
         flatten.retain_grad()  # 그래디언트 보존 명시적 설정
         
         # 완전 연결 계층

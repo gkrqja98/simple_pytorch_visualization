@@ -7,9 +7,9 @@ import AnimatedCalculation from '../AnimatedCalculation';
 const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, learning_rate }) => {
   const [decimalPlaces, setDecimalPlaces] = useState(6);
   const [activeTab, setActiveTab] = useState('basic');
-  const [animationPlaying, setAnimationPlaying] = useState(false);
+
   const [highlightCell, setHighlightCell] = useState({ row: -1, col: -1 });
-  const [visualizationOption, setVisualizationOption] = useState('standard');
+
   const [calculationExample, setCalculationExample] = useState('weightGrad');
 
   // 컨볼루션 역전파 설명을 위한 계산 단계들
@@ -167,13 +167,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
     }
   };
 
-  // Play animation
-  const playAnimation = () => {
-    setAnimationPlaying(true);
-    setTimeout(() => {
-      setAnimationPlaying(false);
-    }, 2000);
-  };
+
 
   return (
     <div className="conv-backprop-visualizer">
@@ -193,29 +187,6 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
             </Form.Select>
           </Form.Group>
         </Col>
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Visualization Mode:</Form.Label>
-            <Form.Select
-              value={visualizationOption}
-              onChange={(e) => setVisualizationOption(e.target.value)}
-            >
-              <option value="standard">Standard</option>
-              <option value="heatmap">Heatmap</option>
-              <option value="colorscale">Color Scale</option>
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={4} className="d-flex align-items-end">
-          <Button 
-            variant="primary" 
-            onClick={playAnimation}
-            disabled={animationPlaying}
-            className="mb-2"
-          >
-            {animationPlaying ? 'Animating...' : 'Play Gradient Flow Animation'}
-          </Button>
-        </Col>
       </Row>
 
       {/* Main Visualization Tabs */}
@@ -226,9 +197,6 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="detailed">Detailed Calculation</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="animation">Flow Animation</Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="learning-rate">Learning Rate Impact</Nav.Link>
@@ -245,7 +213,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                   <div className="tensor-item">
                     <p>Output Gradient</p>
                     {outputGradData.length > 0 ? (
-                      <table className={`tensor-table mx-auto ${visualizationOption}`}>
+                      <table className="tensor-table mx-auto">
                         <tbody>
                           {outputGradData.map((row, rowIdx) => (
                             <tr key={rowIdx}>
@@ -253,14 +221,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                                 <td 
                                   key={colIdx}
                                   style={{ 
-                                    backgroundColor: visualizationOption === 'standard' 
-                                      ? `rgba(0, 123, 255, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                      : visualizationOption === 'heatmap'
-                                      ? `rgba(0, 123, 255, ${Math.min(Math.abs(value || 0), 0.7)})`
-                                      : 'transparent',
-                                    color: visualizationOption === 'colorscale' 
-                                      ? `rgba(0, 123, 255, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                      : 'inherit'
+                                    backgroundColor: `rgba(0, 123, 255, ${Math.min(Math.abs(value || 0), 0.7)})` 
                                   }}
                                   onMouseEnter={() => setHighlightCell({ row: rowIdx, col: colIdx })}
                                   onMouseLeave={() => setHighlightCell({ row: -1, col: -1 })}
@@ -282,7 +243,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                   <div className="tensor-item mt-4">
                     <p>Input Feature Map</p>
                     {inputTensorData.length > 0 ? (
-                      <table className={`tensor-table mx-auto ${visualizationOption}`}>
+                      <table className="tensor-table mx-auto">
                         <tbody>
                           {inputTensorData.map((row, rowIdx) => (
                             <tr key={rowIdx}>
@@ -290,14 +251,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                                 <td 
                                   key={colIdx}
                                   style={{ 
-                                    backgroundColor: visualizationOption === 'standard' 
-                                      ? `rgba(40, 167, 69, ${Math.min(Math.abs((value || 0)/16), 0.7)})` 
-                                      : visualizationOption === 'heatmap'
-                                      ? `rgba(40, 167, 69, ${Math.min(Math.abs((value || 0)/10), 1)})`
-                                      : 'transparent',
-                                    color: visualizationOption === 'colorscale' 
-                                      ? `rgba(40, 167, 69, ${Math.min(Math.abs((value || 0)/5), 1)})` 
-                                      : 'inherit'
+                                    backgroundColor: `rgba(40, 167, 69, ${Math.min(Math.abs((value || 0)/16), 0.7)})` 
                                   }}
                                   onMouseEnter={() => setHighlightCell({ row: rowIdx, col: colIdx })}
                                   onMouseLeave={() => setHighlightCell({ row: -1, col: -1 })}
@@ -328,7 +282,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                   <div className="tensor-item">
                     <p>Weight Gradient</p>
                     {weightGradData.length > 0 ? (
-                      <table className={`tensor-table mx-auto ${visualizationOption}`}>
+                      <table className="tensor-table mx-auto">
                         <tbody>
                           {weightGradData.map((row, rowIdx) => (
                             <tr key={rowIdx}>
@@ -336,14 +290,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                                 <td 
                                   key={colIdx}
                                   style={{ 
-                                    backgroundColor: visualizationOption === 'standard' 
-                                      ? `rgba(220, 53, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                      : visualizationOption === 'heatmap'
-                                      ? `rgba(220, 53, 69, ${Math.min(Math.abs(value || 0), 0.7)})`
-                                      : 'transparent',
-                                    color: visualizationOption === 'colorscale' 
-                                      ? `rgba(220, 53, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                      : 'inherit'
+                                    backgroundColor: `rgba(220, 53, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
                                   }}
                                   onMouseEnter={() => setHighlightCell({ row: rowIdx, col: colIdx })}
                                   onMouseLeave={() => setHighlightCell({ row: -1, col: -1 })}
@@ -368,7 +315,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                       <div>
                         <p className="text-center">Initial Weights</p>
                         {initialWeightsData.length > 0 ? (
-                          <table className={`tensor-table mx-auto ${visualizationOption}`}>
+                          <table className="tensor-table mx-auto">
                             <tbody>
                               {initialWeightsData.map((row, rowIdx) => (
                                 <tr key={rowIdx}>
@@ -376,14 +323,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                                     <td 
                                       key={colIdx}
                                       style={{ 
-                                        backgroundColor: visualizationOption === 'standard' 
-                                          ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                          : visualizationOption === 'heatmap'
-                                          ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 1)})`
-                                          : 'transparent',
-                                        color: visualizationOption === 'colorscale' 
-                                          ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 1)})` 
-                                          : 'inherit'
+                                        backgroundColor: `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
                                       }}
                                     >
                                       {formatValue(value)}
@@ -403,7 +343,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                       <div>
                         <p className="text-center">Updated Weights</p>
                         {updatedWeightsData.length > 0 ? (
-                          <table className={`tensor-table mx-auto ${visualizationOption}`}>
+                          <table className="tensor-table mx-auto">
                             <tbody>
                               {updatedWeightsData.map((row, rowIdx) => (
                                 <tr key={rowIdx}>
@@ -416,14 +356,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
                                       <td 
                                         key={colIdx}
                                         style={{ 
-                                          backgroundColor: visualizationOption === 'standard' 
-                                            ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 0.7)})` 
-                                            : visualizationOption === 'heatmap'
-                                            ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 1)})`
-                                            : 'transparent',
-                                          color: visualizationOption === 'colorscale' 
-                                            ? `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 1)})` 
-                                            : 'inherit',
+                                          backgroundColor: `rgba(40, 167, 69, ${Math.min(Math.abs(value || 0), 0.7)})`,
                                           border: Math.abs(delta) > 0.00001 ? '2px solid #dc3545' : '1px solid #dee2e6'
                                         }}
                                       >
@@ -781,105 +714,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
             </div>
           </Tab.Pane>
 
-          {/* Flow Animation Tab */}
-          <Tab.Pane eventKey="animation">
-            <div className="gradient-flow-animation p-3 bg-light rounded">
-              <h5 className="mb-3">Convolution Gradient Flow Animation</h5>
-              
-              <div className="animation-container position-relative">
-                {/* SVG Animation of gradient flow */}
-                <svg width="100%" height="300" className="gradient-flow-svg">
-                  {/* Layers Representation */}
-                  <g className="network-layers">
-                    {/* ReLU Layer Output */}
-                    <rect x="50" y="100" width="120" height="100" rx="5" fill="#f8d7da" stroke="#6c757d" strokeWidth="2" />
-                    <text x="110" y="90" textAnchor="middle" fill="#343a40" fontWeight="bold" fontSize="12">ReLU Output</text>
-                    
-                    {/* Conv Layer */}
-                    <rect x="340" y="100" width="120" height="100" rx="5" fill="#d1ecf1" stroke="#6c757d" strokeWidth="2" />
-                    <text x="400" y="90" textAnchor="middle" fill="#343a40" fontWeight="bold" fontSize="12">Conv Layer</text>
-                    
-                    {/* Weights */}
-                    <rect x="550" y="50" width="100" height="80" rx="5" fill="#fff3cd" stroke="#6c757d" strokeWidth="2" />
-                    <text x="600" y="40" textAnchor="middle" fill="#343a40" fontWeight="bold" fontSize="12">Weights</text>
-                    
-                    {/* Input */}
-                    <rect x="550" y="170" width="100" height="80" rx="5" fill="#d4edda" stroke="#6c757d" strokeWidth="2" />
-                    <text x="600" y="265" textAnchor="middle" fill="#343a40" fontWeight="bold" fontSize="12">Input</text>
-                    
-                    {/* Gradient Flow Paths */}
-                    <path d="M170,150 C240,150 270,150 340,150" fill="none" stroke="#dee2e6" strokeWidth="3" strokeDasharray="6,3" />
-                    <path d="M460,125 C490,125 520,90 550,90" fill="none" stroke="#dee2e6" strokeWidth="3" strokeDasharray="6,3" />
-                    <path d="M460,175 C490,175 520,210 550,210" fill="none" stroke="#dee2e6" strokeWidth="3" strokeDasharray="6,3" />
-                    
-                    {/* Gradient Particles */}
-                    <circle className={`gradient-particle particle-1 ${animationPlaying ? 'animate' : ''}`} 
-                            cx="170" cy="150" r="5" fill="#007bff" 
-                            style={{
-                              opacity: animationPlaying ? 1 : 0,
-                              animation: animationPlaying ? 'moveParticle1 2s ease-in-out' : 'none'
-                            }} />
-                            
-                    <circle className={`gradient-particle particle-2 ${animationPlaying ? 'animate' : ''}`} 
-                            cx="170" cy="150" r="5" fill="#007bff"
-                            style={{
-                              opacity: animationPlaying ? 1 : 0,
-                              animation: animationPlaying ? 'moveParticle1 2s ease-in-out 0.5s' : 'none'
-                            }} />
-                            
-                    <circle className={`gradient-particle particle-3 ${animationPlaying ? 'animate' : ''}`} 
-                            cx="400" cy="125" r="5" fill="#dc3545"
-                            style={{
-                              opacity: animationPlaying ? 1 : 0,
-                              animation: animationPlaying ? 'moveParticle2 2s ease-in-out 1s' : 'none'
-                            }} />
-                            
-                    <circle className={`gradient-particle particle-4 ${animationPlaying ? 'animate' : ''}`} 
-                            cx="400" cy="175" r="5" fill="#28a745"
-                            style={{
-                              opacity: animationPlaying ? 1 : 0,
-                              animation: animationPlaying ? 'moveParticle3 2s ease-in-out 1s' : 'none'
-                            }} />
-                    
-                    {/* Gradient Labels */}
-                    <text x="255" y="140" textAnchor="middle" fill="#6c757d" fontSize="11">∂L/∂Conv_out</text>
-                    <text x="505" y="80" textAnchor="middle" fill="#6c757d" fontSize="11">∂L/∂W</text>
-                    <text x="505" y="225" textAnchor="middle" fill="#6c757d" fontSize="11">∂L/∂Input</text>
-                  </g>
-                </svg>
-                
-                <div className="animation-controls mt-3 text-center">
-                  <Button 
-                    variant="primary" 
-                    onClick={playAnimation}
-                    disabled={animationPlaying}
-                  >
-                    {animationPlaying ? 'Animating...' : 'Play Animation'}
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="animation-explanation mt-4">
-                <h6>Explanation of Gradient Flow</h6>
-                <p>The animation illustrates how gradients flow backward through the convolutional layer:</p>
-                <ol>
-                  <li>Gradients from the ReLU layer (∂L/∂ReLU_out) flow into the convolution layer.</li>
-                  <li>The convolution layer passes these gradients to both:
-                    <ul>
-                      <li>The weights (∂L/∂W) - used to update the model parameters</li>
-                      <li>The inputs (∂L/∂Input) - propagated back to earlier layers</li>
-                    </ul>
-                  </li>
-                  <li>The weight gradients are used to update the weights using gradient descent: 
-                     <InlineMath math="W_{new} = W_{old} - \eta \cdot \frac{\partial L}{\partial W}" />
-                  </li>
-                </ol>
-                <p className="text-muted mt-3">
-                  <strong>Reference:</strong> LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
-                </p>
-              </div>
-            </div>
-          </Tab.Pane>
+
 
           {/* Learning Rate Impact Tab */}
           <Tab.Pane eventKey="learning-rate">
@@ -1016,15 +851,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
           position: relative;
         }
         
-        .tensor-table.heatmap td {
-          transition: background-color 0.3s;
-        }
-        
-        .tensor-table.colorscale td {
-          background-color: white !important;
-          transition: color 0.3s;
-          font-weight: bold;
-        }
+
         
         .tensor-table td.highlighted {
           box-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
@@ -1068,26 +895,7 @@ const ConvBackpropVisualizer = ({ backward, initial_weights, updated_weights, le
           margin-top: 10px;
         }
         
-        @keyframes moveParticle1 {
-          0% { opacity: 0; transform: translate(0, 0); }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { opacity: 0; transform: translate(230px, 0); }
-        }
-        
-        @keyframes moveParticle2 {
-          0% { opacity: 0; transform: translate(0, 0); }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { opacity: 0; transform: translate(150px, -35px); }
-        }
-        
-        @keyframes moveParticle3 {
-          0% { opacity: 0; transform: translate(0, 0); }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { opacity: 0; transform: translate(150px, 35px); }
-        }
+
         
         /* Step-by-step calculation styles */
         .calculation-step {
