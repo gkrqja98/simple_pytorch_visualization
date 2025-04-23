@@ -194,8 +194,6 @@ run_frontend.bat
 4. 모델 해석 도구 (Grad-CAM, Saliency Maps 등)
 
 ## 참고 문헌
-<<<<<<< HEAD
-
 =======
 0. QuarkML. (2023, July). Derivation of Backpropagation in Convolutional Neural Network (CNN).
 Retrieved from [https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html​
