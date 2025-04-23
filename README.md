@@ -194,7 +194,13 @@ run_frontend.bat
 4. 모델 해석 도구 (Grad-CAM, Saliency Maps 등)
 
 ## 참고 문헌
+<<<<<<< HEAD
 
+=======
+0. QuarkML. (2023, July). Derivation of Backpropagation in Convolutional Neural Network (CNN).
+Retrieved from [https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html​
+quarkml.com](https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html)
+>>>>>>> 3792a39575877c4fa8948912196bb63a5d0860d8
 1. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
 2. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.
 3. He, K., Zhang, X., Ren, S., & Sun, J. (2015). Delving deep into rectifiers: Surpassing human-level performance on imagenet classification. ICCV.
