@@ -156,8 +156,9 @@ run_frontend.bat
 7. 모델 가중치의 진화를 3D로 시각화
 
 ## 참고 문헌
-0. QuarkML. (2023, July). Derivation of Backpropagation in Convolutional Neural Network (CNN). Retrieved from https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html​
-quarkml.com
+0. QuarkML. (2023, July). Derivation of Backpropagation in Convolutional Neural Network (CNN).
+Retrieved from [https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html​
+quarkml.com](https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html)
 1. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
 2. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.
 3. He, K., Zhang, X., Ren, S., & Sun, J. (2015). Delving deep into rectifiers: Surpassing human-level performance on imagenet classification. ICCV.
