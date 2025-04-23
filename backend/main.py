@@ -16,10 +16,10 @@ visualizer = ModelVisualizer(model, learning_rate=0.01)
 # 샘플 데이터 생성
 def create_sample_data():
     # 4x4 입력 이미지 (배치 크기 1, 채널 1)
-    input_data = torch.tensor([[[[1.0, 2.0, 3.0, 4.0],
-                               [5.0, 6.0, 7.0, 8.0],
-                               [9.0, 10.0, 11.0, 12.0],
-                               [13.0, 14.0, 15.0, 16.0]]]], dtype=torch.float32)
+    input_data = torch.tensor([[[[1.0, 2.0, 1.0, 0.0],
+                               [0.0, -1.0, 0.0, 1.0],
+                               [-2.0, 1.0, -2.0, -2.0],
+                               [0.0, 1.0, 0.0, 1.0]]]], dtype=torch.float32)
     
     # 타겟 라벨 (클래스 0)
     target = torch.tensor([0], dtype=torch.long)

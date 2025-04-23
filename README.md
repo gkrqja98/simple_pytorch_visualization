@@ -4,14 +4,20 @@
 
 ## 주요 기능
 
+### 현재 구현된 기능
 - PyTorch를 사용한 단순 CNN 모델 구현 (Conv2d, ReLU, MaxPool2d, Linear 레이어 포함)
 - 모델의 순전파와 역전파 과정을 층별로 상세히 추적하는 도구
 - 모든 텐서 연산을 행렬 형태로 분해하여 시각화
 - 모든 계산 과정을 수학적 공식과 함께 HTML로 표현
 - 3회의 학습 반복(epoch) 동안 가중치와 그래디언트 변화 시각화
 - 수식(LaTeX) 지원으로 수학적 원리 명확히 표현
-- 모듈화된 코드로 다양한 PyTorch 모델에 적용 가능
-- 웹 브라우저에서 볼 수 있는 독자적인 HTML 파일로 배포 가능
+
+### 아직 구현되지 않은 기능 (개발 예정)
+- 다양한 PyTorch 모델에 적용 가능한 모듈화 확장
+- 웹 브라우저에서 볼 수 있는 독자적인 HTML 파일로 내보내기 기능
+- 사용자 정의 데이터셋 업로드 및 처리
+- 실시간 모델 수정 및 결과 시각화
+- 다양한 최적화 알고리즘 비교 도구
 
 ## 프로젝트 구조
 
@@ -52,6 +58,21 @@ deepl/
 ```
 
 ## 설치 및 실행
+
+### React 18 관련 중요 사항
+**주의**: 이 프로젝트는 React 18을 사용해야 합니다. React 18은 Concurrent Mode와 같은 새로운 기능을 제공하며, 이 프로젝트의 많은 시각화 컴포넌트들이 React 18의 기능에 의존합니다. 이전 버전의 React를 사용할 경우 렌더링 문제가 발생할 수 있습니다.
+
+React 버전을 확인하려면:
+```bash
+cd frontend
+npm list react
+```
+
+React 18을 설치하려면:
+```bash
+cd frontend
+npm install react@18 react-dom@18 --save
+```
 
 ### 백엔드 설정
 
@@ -125,7 +146,7 @@ run_frontend.bat
 ## 기술 스택
 
 - **백엔드**: Python, PyTorch, Flask
-- **프론트엔드**: React, Bootstrap, KaTeX (수식 렌더링)
+- **프론트엔드**: React 18, Bootstrap, KaTeX (수식 렌더링)
 - **시각화**: CSS 애니메이션, 행렬 표현
 
 ## 작동 방식
@@ -145,19 +166,35 @@ run_frontend.bat
 - 역전파 후 가중치 업데이트
 - 모든 계산 단계에 대한 상세한 분석과 시각화
 
-## 확장 계획
+## 현재 제한사항
 
+1. 현재는 고정된 4x4 입력 이미지와 사전 정의된 가중치만 지원합니다.
+2. 오직 하나의 합성곱 레이어, ReLU, MaxPool 및 하나의 완전 연결 레이어만 시각화할 수 있습니다.
+3. 학습 알고리즘은 기본적인 SGD(확률적 경사 하강법)로 고정되어 있습니다.
+4. 역전파 계산에서 일부 중간 단계가 간소화되어 있습니다.
+
+## 확장 계획 (로드맵)
+
+### 단기 개발 계획 (1-3개월)
+1. 사용자 정의 입력 데이터 지원
+2. 다양한 커널 크기 및 패딩 옵션 제공
+3. 더 깊은 네트워크 지원 (다중 합성곱 및 완전 연결 레이어)
+4. 모델 구성 저장 및 불러오기 기능
+
+### 중장기 개발 계획 (3-6개월)
 1. 더 복잡한 CNN 아키텍처 지원 (ResNet, VGG 등)
 2. 맞춤형 데이터셋 업로드 기능
 3. 실시간 모델 수정 및 결과 시각화
 4. 다양한 최적화 알고리즘 비교 도구 (SGD, Adam, RMSprop 등)
-5. 학습 과정의 시간에 따른 그래디언트 흐름 애니메이션
-6. 추가 레이어 지원 (BatchNorm, Dropout 등)
-7. 모델 가중치의 진화를 3D로 시각화
+
+### 장기 개발 계획 (6개월 이상)
+1. 학습 과정의 시간에 따른 그래디언트 흐름 애니메이션
+2. 추가 레이어 지원 (BatchNorm, Dropout 등)
+3. 모델 가중치의 진화를 3D로 시각화
+4. 모델 해석 도구 (Grad-CAM, Saliency Maps 등)
 
 ## 참고 문헌
-0. QuarkML. (2023, July). Derivation of Backpropagation in Convolutional Neural Network (CNN). Retrieved from https://www.quarkml.com/2023/07/backward-pass-in-convolutional-neural-network-explained.html​
-quarkml.com
+
 1. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
 2. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.
 3. He, K., Zhang, X., Ren, S., & Sun, J. (2015). Delving deep into rectifiers: Surpassing human-level performance on imagenet classification. ICCV.
