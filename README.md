@@ -1,102 +1,169 @@
 # PyTorch CNN Visualization Tool
 
-This project visualizes the forward and backward propagation process of a simple CNN model implemented in PyTorch. It breaks down all tensor operations into matrix form and presents them with mathematical formulas in an interactive HTML interface.
+이 프로젝트는 PyTorch로 구현된 간단한 CNN 모델의 순전파와 역전파 과정을 시각화합니다. 모든 텐서 연산을 행렬 형태로 분해하여 수학적 공식과 함께 대화형 HTML 인터페이스에서 표현합니다.
 
-## Key Features
+## 주요 기능
 
-- Simple CNN model implementation (including Conv2d, ReLU, MaxPool2d, Linear layers)
-- Layer-by-layer detailed tracing of the model's forward and backward propagation
-- Visualization of all tensor operations in matrix form
-- Presentation of all calculation processes with mathematical formulas in HTML
-- Visualization of weight and gradient changes during 3 training iterations (epochs)
-- Support for mathematical expressions (LaTeX) for clear explanation of principles
-- Modular code applicable to various PyTorch models
+- PyTorch를 사용한 단순 CNN 모델 구현 (Conv2d, ReLU, MaxPool2d, Linear 레이어 포함)
+- 모델의 순전파와 역전파 과정을 층별로 상세히 추적하는 도구
+- 모든 텐서 연산을 행렬 형태로 분해하여 시각화
+- 모든 계산 과정을 수학적 공식과 함께 HTML로 표현
+- 3회의 학습 반복(epoch) 동안 가중치와 그래디언트 변화 시각화
+- 수식(LaTeX) 지원으로 수학적 원리 명확히 표현
+- 모듈화된 코드로 다양한 PyTorch 모델에 적용 가능
+- 웹 브라우저에서 볼 수 있는 독자적인 HTML 파일로 배포 가능
 
-## Project Structure
+## 프로젝트 구조
 
 ```
 deepl/
-  ├── backend/               # Python backend
-  │   ├── main.py            # API server
-  │   ├── model.py           # CNN model definition
-  │   ├── visualizer.py      # Model calculation tracing
-  │   ├── requirements.txt   # Required packages
-  │   └── data/              # Sample data
+  ├── backend/               # 파이썬 백엔드
+  │   ├── main.py            # API 서버
+  │   ├── model.py           # CNN 모델 정의
+  │   ├── visualizer.py      # 모델 계산 추적
+  │   ├── verify_backprop.py # 역전파 검증 도구
+  │   ├── templates/         # HTML 템플릿
+  │   ├── output/            # 출력 파일
+  │   ├── requirements.txt   # 필요 패키지
+  │   └── data/              # 샘플 데이터
   │
-  └── frontend/              # React frontend
-      ├── public/            # Static files
-      ├── src/               # Source code
-      │   ├── components/    # React components
-      │   ├── pages/         # Page components
-      │   ├── utils/         # Utility functions
-      │   ├── App.js         # Main app
-      │   └── index.js       # Entry point
-      ├── package.json       # Dependencies
-      └── .env               # Environment variables
+  └── frontend/              # React 프론트엔드
+      ├── public/            # 정적 파일
+      ├── src/               # 소스 코드
+      │   ├── components/    # React 컴포넌트
+      │   │   ├── AnimatedCalculation.js  # 계산 애니메이션
+      │   │   ├── TensorVisualizer.js     # 텐서 시각화
+      │   │   ├── ConvolutionVisualizer.js # 합성곱 시각화
+      │   │   ├── ReluVisualizer.js       # ReLU 시각화
+      │   │   ├── MaxPoolVisualizer.js    # MaxPool 시각화
+      │   │   ├── FCLayerVisualizer.js    # 완전연결층 시각화
+      │   │   ├── backprop/              # 역전파 컴포넌트
+      │   │   │   ├── FCLayerBackprop.js  # FC 역전파
+      │   │   │   ├── MaxPoolBackprop.js  # MaxPool 역전파
+      │   │   │   ├── ReluBackprop.js     # ReLU 역전파
+      │   │   │   └── ConvBackprop.js     # Conv 역전파
+      │   │   └── ...
+      │   ├── pages/         # 페이지 컴포넌트
+      │   ├── utils/         # 유틸리티 함수
+      │   ├── App.js         # 메인 앱
+      │   └── index.js       # 진입점
+      ├── package.json       # 의존성
+      └── .env               # 환경 변수
 ```
 
-## Installation and Execution
+## 설치 및 실행
 
-### Backend Setup
+### 백엔드 설정
 
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### Running the Backend
+### 백엔드 실행
 
 ```bash
 cd backend
 python main.py
 ```
 
-### Frontend Setup
+또는 제공된 스크립트 사용:
+
+```bash
+# Windows
+run_backend.bat
+
+# Linux/Mac
+./run_backend.sh
+```
+
+### 프론트엔드 설정
 
 ```bash
 cd frontend
 npm install
 ```
 
-### Running the Frontend
+### 프론트엔드 실행
 
 ```bash
 cd frontend
 npm start
 ```
 
-## Web Interface Structure
+또는 제공된 스크립트 사용:
 
-1. **Model Architecture**: Model structure and layer descriptions
-2. **Iterations 1, 2, 3**: Detailed information for each training iteration
-   - Display of input data, weights, learning rate, etc.
-   - Forward Pass: Visualization of all computational steps in the forward propagation
-   - Backward Pass: Visualization of all computational steps in the backward propagation
+```bash
+# Windows
+run_frontend.bat
 
-## Tech Stack
+# Linux/Mac
+./run_frontend.sh
+```
 
-- **Backend**: Python, PyTorch, Flask
-- **Frontend**: React, Bootstrap, KaTeX (formula rendering)
+## 웹 인터페이스 구조
 
-## How It Works
+1. **모델 아키텍처**: 모델 구조 및 레이어 설명
+   - 각 레이어 유형에 대한 자세한 수학적 설명
+   - 레이어 간 연결 표시
+   - 수학적 공식은 LaTeX로 렌더링
 
-The application demonstrates a simple CNN model with the following architecture:
-- Input: 4x4 image
-- Conv2d (kernel_size=2, padding=0): Output size 3x3
-- ReLU: Maintains size 3x3
-- MaxPool2d (kernel_size=2, stride=1): Output size 2x2
-- Flatten: Converts 2x2 feature map to 4 elements
-- Linear(4, 2): Maps 4 features to 2 output classes
+2. **반복 1, 2, 3**: 각 학습 반복에 대한 상세 정보
+   - 입력 데이터, 가중치, 학습률 등 표시
+   - **순전파**: 순전파의 모든 계산 단계 시각화
+     - Conv2d 레이어: 합성곱 연산의 행렬 분해
+     - ReLU 레이어: 활성화 함수 적용 과정
+     - MaxPool2d 레이어: 풀링 연산 과정
+     - Linear 레이어: 행렬 곱셈 연산
+   - **역전파**: 역전파의 모든 계산 단계 시각화
+     - 그래디언트 흐름
+     - 가중치 업데이트 과정
+     - 역전파 수식 설명
+
+3. **이터레이션 결과**: 각 이터레이션 후 손실 및 가중치 변화 요약
+
+## 기술 스택
+
+- **백엔드**: Python, PyTorch, Flask
+- **프론트엔드**: React, Bootstrap, KaTeX (수식 렌더링)
+- **시각화**: CSS 애니메이션, 행렬 표현
+
+## 작동 방식
+
+이 애플리케이션은 다음과 같은 아키텍처를 가진 간단한 CNN 모델을 시연합니다:
+- 입력: 4x4 이미지
+- Conv2d (kernel_size=2, padding=0): 출력 크기 3x3
+- ReLU: 크기 3x3 유지
+- MaxPool2d (kernel_size=2, stride=1): 출력 크기 2x2
+- Flatten: 2x2 특성 맵을 4개 요소로 변환
+- Linear(4, 2): 4개 특성을 2개 출력 클래스로 매핑
 - Loss: CrossEntropyLoss
 
-For each layer, the tool shows:
-- Mathematical formulas that govern the operations
-- Actual values computed during forward and backward passes
-- Weight updates after backpropagation
+각 레이어에 대해 도구는 다음을 보여줍니다:
+- 연산을 지배하는 수학적 공식
+- 순전파 및 역전파 중에 계산된 실제 값
+- 역전파 후 가중치 업데이트
+- 모든 계산 단계에 대한 상세한 분석과 시각화
 
-## References
+## 확장 계획
+
+1. 더 복잡한 CNN 아키텍처 지원 (ResNet, VGG 등)
+2. 맞춤형 데이터셋 업로드 기능
+3. 실시간 모델 수정 및 결과 시각화
+4. 다양한 최적화 알고리즘 비교 도구 (SGD, Adam, RMSprop 등)
+5. 학습 과정의 시간에 따른 그래디언트 흐름 애니메이션
+6. 추가 레이어 지원 (BatchNorm, Dropout 등)
+7. 모델 가중치의 진화를 3D로 시각화
+
+## 참고 문헌
 
 1. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
 2. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.
 3. He, K., Zhang, X., Ren, S., & Sun, J. (2015). Delving deep into rectifiers: Surpassing human-level performance on imagenet classification. ICCV.
 4. Dumoulin, V., & Visin, F. (2016). A guide to convolution arithmetic for deep learning. arXiv preprint arXiv:1603.07285.
+5. Chellapilla, K., Puri, S., & Simard, P. (2006). High performance convolutional neural networks for document processing. In Tenth International Workshop on Frontiers in Handwriting Recognition.
+6. Glorot, X., Bordes, A., & Bengio, Y. (2011). Deep sparse rectifier neural networks. In Proceedings of the fourteenth international conference on artificial intelligence and statistics (pp. 315-323).
+7. Graham, B. (2014). Fractional max-pooling. arXiv preprint arXiv:1412.6071.
+8. Bishop, C. M. (2006). Pattern recognition and machine learning. Springer.
+9. Nair, V., & Hinton, G. E. (2010). Rectified linear units improve restricted boltzmann machines. In Proceedings of the 27th International Conference on Machine Learning (ICML-10) (pp. 807-814).
+10. Scherer, D., Müller, A., & Behnke, S. (2010). Evaluation of pooling operations in convolutional architectures for object recognition. In Artificial Neural Networks–ICANN 2010 (pp. 92-101). Springer.
